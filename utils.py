@@ -33,9 +33,9 @@ def analyze_formulation(domain, name, description, process):
                     "content": prompt,
                 }
             ],
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-70b-versatile",
             temperature=0.3,
         )
         return chat_completion.choices[0].message.content
     except Exception as e:
-        return f"Error connecting to Groq API: {str(e)}"
+        return f"Error connecting to Groq API: {str(e)}" 
