@@ -5,6 +5,7 @@ import time
 API_KEY = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=API_KEY)
 
+@st.cache_data(show_spinner=False)
 def analyze_formulation(domain, name, description, process):
     model = genai.GenerativeModel('gemini-3.6-flash')
     
@@ -27,7 +28,6 @@ def analyze_formulation(domain, name, description, process):
     Keep the tone formal, medical-legal, sharp, and authoritative.
     """
     
-    # Auto-retry loop for handling 429 quota limits smoothly
     max_retries = 3
     wait_time = 5
     
@@ -40,7 +40,7 @@ def analyze_formulation(domain, name, description, process):
             if "429" in error_str or "quota" in error_str.lower():
                 if attempt < max_retries - 1:
                     time.sleep(wait_time)
-                    wait_time *= 2  # Exponential backoff
+                    wait_time *= 2
                     continue
             return f"Error connecting to Gemini API: {error_str}"
             
