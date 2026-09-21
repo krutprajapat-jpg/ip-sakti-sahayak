@@ -6,7 +6,7 @@ genai.configure(api_key=API_KEY)
 
 def analyze_formulation(domain, name, description, process):
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-pro')
         
         prompt = f"""
         Act as a senior Global Pharmaceutical Patent Examiner and Intellectual Property (IP) Compliance Expert specializing in Medical & Pharmacy Patent Laws (including Indian Patents Act Sec 3(d) for efficacy, Sec 3(p) for traditional systems, US FDA/USPTO guidelines, and international drug patentability).
