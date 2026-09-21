@@ -14,7 +14,7 @@ def analyze_formulation(domain, name, description, process):
         Analyze the following medical/pharmaceutical innovation under the domain: {domain}
         - Formulation / Drug Name: {name}
         - Active Ingredients / Excipients / Chemical Composition: {description}
-        - Manufacturing Process / Dosage Form / Therapeutic Advantage: {process}
+        - Manufacturing Process / Novel Drug Delivery System (NDDS) / Therapeutic Advantage: {process}
         
         Your task is to determine whether this medical formulation is non-patentable (due to mere admixture under Sec 3(e), lack of enhanced efficacy under Sec 3(d), or prior art) or if it possesses a genuine 'Inventive Step' / Novelty / Therapeutic Efficacy.
         

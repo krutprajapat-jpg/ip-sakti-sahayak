@@ -208,7 +208,6 @@ else:
     with st.container():
         st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         
-        # Multi-Pharmacy Domain Selection
         domain = st.selectbox(
             "🔬 Select Medical / Pharmacy Branch", 
             [
