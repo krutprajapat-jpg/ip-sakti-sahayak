@@ -1,14 +1,11 @@
 import streamlit as st
-import google.generativeai as genai
-import time
+from groq import Groq
 
-API_KEY = st.secrets["GEMINI_API_KEY"]
-genai.configure(api_key=API_KEY)
+# Initialize Groq Client using Streamlit secrets
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 @st.cache_data(show_spinner=False)
 def analyze_formulation(domain, name, description, process):
-    model = genai.GenerativeModel('gemini-3.6-flash')
-    
     prompt = f"""
     Act as a senior Global Pharmaceutical Patent Examiner and Intellectual Property (IP) Compliance Expert specializing in Medical & Pharmacy Patent Laws (including Indian Patents Act Sec 3(d) for efficacy, Sec 3(p) for traditional systems, US FDA/USPTO guidelines, and international drug patentability).
     
@@ -28,20 +25,17 @@ def analyze_formulation(domain, name, description, process):
     Keep the tone formal, medical-legal, sharp, and authoritative.
     """
     
-    max_retries = 3
-    wait_time = 5
-    
-    for attempt in range(max_retries):
-        try:
-            response = model.generate_content(prompt)
-            return response.text
-        except Exception as e:
-            error_str = str(e)
-            if "429" in error_str or "quota" in error_str.lower():
-                if attempt < max_retries - 1:
-                    time.sleep(wait_time)
-                    wait_time *= 2
-                    continue
-            return f"Error connecting to Gemini API: {error_str}"
-            
-    return "Error: API rate limit exceeded. Please wait a minute and try again."
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            model="llama-3.3-70b-versatile",
+            temperature=0.3,
+        )
+        return chat_completion.choices[0].message.content
+    except Exception as e:
+        return f"Error connecting to Groq API: {str(e)}"
