@@ -1,165 +1,139 @@
 import streamlit as st
-import time
 from utils import analyze_formulation
 
 # Page Configuration
 st.set_page_config(
-    page_title="IP-SAKTI Sahayak | Legal-Tech Compliance",
+    page_title="IP-SAKTI Sahayak",
     page_icon="⚖️",
-    layout="wide"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
-# Initialize Session State for Login and App Flow
-if 'logged_in' not in st.session_state:
-    st.session_state['logged_in'] = False
-if 'splash_done' not in st.session_state:
-    st.session_state['splash_done'] = False
-
-# --- 1. SPLASH SCREEN ANIMATION ---
-if not st.session_state['splash_done']:
-    st.markdown("""
-        <style>
-        .splash-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 70vh;
-            text-align: center;
-        }
-        .splash-title {
-            font-size: 3rem;
-            color: #1E3A8A;
-            font-weight: 800;
-        }
-        .splash-sub {
-            font-size: 1.2rem;
-            color: #4B5563;
-        }
-        </style>
-        <div class="splash-container">
-            <p class="splash-title">⚖️ IP-SAKTI Sahayak</p>
-            <p class="splash-sub">Initializing AI Legal-Tech & TKDL Compliance Engine...</p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # Simulate loading progress
-    progress_bar = st.progress(0)
-    for i in range(100):
-        time.sleep(0.01)
-        progress_bar.progress(i + 1)
-        
-    st.session_state['splash_done'] = True
-    st.rerun()
-
-# --- 2. LOGIN / ACCESS GATE ---
-if not st.session_state['logged_in']:
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
-    
-    with col2:
-        st.markdown("### 🔐 Secure Legal Portal Login")
-        st.markdown("Enter your researcher or startup credentials to access the IP screening engine.")
-        
-        username = st.text_input("Username / Founder ID", placeholder="e.g., admin_sih")
-        password = st.text_input("Access Password", type="password", placeholder="********")
-        
-        if st.button("Login to Dashboard", type="primary", use_container_width=True):
-            if username and password:
-                st.session_state['logged_in'] = True
-                st.success("Login Successful! Redirecting...")
-                time.sleep(0.8)
-                st.rerun()
-            else:
-                st.error("Please enter valid login details.")
-    st.stop()
-
-# --- 3. MAIN APP DASHBOARD (After Login) ---
+# Custom CSS for Premium UI, Glassmorphism, and Mobile Responsiveness
 st.markdown("""
     <style>
-    .main-header {
-        font-size: 2.2rem;
-        color: #1E3A8A;
-        font-weight: 700;
+    /* Main Background & Font Styling */
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #020617 100%);
+        color: #f8fafc;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    .sub-header {
-        font-size: 1.1rem;
-        color: #4B5563;
+    
+    /* Hide Streamlit Default Header and Footer */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Glassmorphism Container Card */
+    .glass-card {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        margin-bottom: 20px;
+    }
+
+    /* Custom Header Styling */
+    .main-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        margin-bottom: 5px;
+    }
+    
+    .sub-title {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 1rem;
+        margin-bottom: 25px;
+    }
+
+    /* Custom Button Styling */
+    .stButton>button {
+        width: 100%;
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        transition: all 0.3s ease;
+    }
+    
+    .stButton>button:hover {
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        transform: translateY(-2px);
+    }
+
+    /* Input Fields Styling */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea {
+        background-color: rgba(15, 23, 42, 0.6);
+        color: #f8fafc;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        padding: 10px;
+    }
+    
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Responsive adjustments for Mobile */
+    @media (max-width: 768px) {
+        .main-title {
+            font-size: 1.6rem;
+        }
+        .glass-card {
+            padding: 15px;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Top Bar with Logout Option
-top_col1, top_col2 = st.columns([8, 2])
-with top_col1:
-    st.markdown('<p class="main-header">⚖️ IP-SAKTI Sahayak</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-header">AI-Powered Prior Art & Section 3(p) Compliance Screening Tool</p>', unsafe_allow_html=True)
-with top_col2:
-    if st.button("🚪 Logout"):
-        st.session_state['logged_in'] = False
-        st.rerun()
+# App Header Section
+st.markdown('<div class="main-title">⚖️ IP-SAKTI Sahayak</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">AI-Powered Traditional Formulation & Patent Compliance Analyzer (Sec 3(p))</div>', unsafe_allow_html=True)
 
-st.markdown("---")
+# Main Form Container inside Glassmorphism Card
+with st.container():
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    
+    form_name = st.text_input("🌿 Formulation Name", placeholder="e.g., AyurImmune Kwath")
+    ingredients = st.text_area("🧪 Key Ingredients", placeholder="List herbs, minerals, or components separated by commas...")
+    process = st.text_area("⚙️ Manufacturing Process / Unique Benefit", placeholder="Describe unique extraction methods or novel modifications...")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    analyze_btn = st.button("🚀 Analyze Compliance & Patent Scope")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# Sidebar for Inputs
-st.sidebar.header("🌿 Formulation Input Panel")
-form_name = st.sidebar.text_input("Formulation Name", "e.g., Herbal Skin Healing Ointment")
-ingredients = st.sidebar.text_area("Key Ingredients & Proportions", "e.g., Chakramarden ext. 16%, Manjistha ext. 13%, Giloy ext. 20%")
-process = st.sidebar.text_area("Manufacturing Process / Unique Benefit", "e.g., Special nano-emulsion extraction method for enhanced absorption.")
-
-analyze_btn = st.sidebar.button("Run Compliance & Patent Filter", type="primary", use_container_width=True)
-
-# Main Content Tabs
-tab1, tab2, tab3 = st.tabs(["📊 Compliance Dashboard", "📜 Legal Framework (Sec 3p)", "ℹ️ About System"])
-
-with tab1:
-    if analyze_btn:
-        if not form_name or not ingredients:
-            st.warning("Please fill in the formulation name and ingredients in the sidebar!")
-        else:
-            with st.spinner("Scanning formulation against TKDL database and Section 3(p) rules..."):
-                report_text = analyze_formulation(form_name, ingredients, process)
-                st.session_state['last_report'] = report_text
-                st.session_state['form_name'] = form_name
-                
-            st.success("Analysis Complete!")
-            st.markdown("### 📋 Evaluation Report")
-            st.markdown(report_text)
-            
-            st.markdown("---")
-            st.download_button(
-                label="📥 Download Official Legal Report (TXT)",
-                data=report_text,
-                file_name=f"{form_name.replace(' ', '_')}_IP_Sakti_Report.txt",
-                mime="text/plain",
-                use_container_width=True
-            )
+# Analysis Execution & Results
+if analyze_btn:
+    if not form_name or not ingredients:
+        st.warning("⚠️ Please fill in at least the Formulation Name and Ingredients to proceed.")
     else:
-        if 'last_report' in st.session_state:
-            st.markdown(f"### 📋 Evaluation Report for: {st.session_state.get('form_name', 'Formulation')}")
-            st.markdown(st.session_state['last_report'])
-            st.download_button(
-                label="📥 Download Official Legal Report (TXT)",
-                data=st.session_state['last_report'],
-                file_name="IP_Sakti_Report.txt",
-                mime="text/plain",
-                use_container_width=True
-            )
-        else:
-            st.info("👈 Enter your formulation details in the sidebar and click **'Run Compliance & Patent Filter'** to initiate scanning.")
-
-with tab2:
-    st.subheader("Understanding Section 3(p) of the Indian Patents Act")
-    st.write("""
-    * **Section 3(p)** states that traditional knowledge or aggregation/duplication of known properties of traditional components is **not patentable**.
-    * **TKDL (Traditional Knowledge Digital Library)** acts as a repository preventing false patents on ancient formulations.
-    * **IP-SAKTI Sahayak** automates this screening process for AYUSH startups and patent examiners.
-    """)
-
-with tab3:
-    st.subheader("About System Architecture")
-    st.write("""
-    * **Domain:** Traditional Indian Systems of Medicine & IP Law.
-    * **Tech Stack:** Python, Streamlit, Advanced Generative AI Models.
-    * **Purpose:** Built for Smart India Hackathon (SIH) to streamline patent novelty checks.
-    """)
+        with st.spinner("🔍 Consulting AI Patent Examiner & Scanning TKDL Database..."):
+            report = analyze_formulation(form_name, ingredients, process)
+        
+        # Results Display Card
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown("### 📋 Evaluation Report")
+        st.markdown(report)
+        
+        # Download Option for Report
+        st.download_button(
+            label="📥 Download Official Legal Report (TXT)",
+            data=report,
+            file_name=f"{form_name.replace(' ', '_')}_patent_report.txt",
+            mime="text/plain"
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
