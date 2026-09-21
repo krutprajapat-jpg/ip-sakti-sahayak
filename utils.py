@@ -1,7 +1,8 @@
+import streamlit as st
 import google.generativeai as genai
 
-# Apni API key yahan rakhein
-API_KEY = "YOUR_API_KEY"
+# Streamlit secrets se API key secure tareeke se uthao
+API_KEY = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=API_KEY)
 
 def analyze_formulation(name, ingredients, process):
