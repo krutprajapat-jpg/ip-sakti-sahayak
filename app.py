@@ -1,5 +1,7 @@
 import streamlit as st
 import random
+import json
+import os
 from utils import analyze_formulation
 
 # Page Configuration
@@ -94,70 +96,109 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# User Database Management (JSON file storage)
+USER_FILE = "users.json"
+
+def load_users():
+    if os.path.exists(USER_FILE):
+        try:
+            with open(USER_FILE, "r") as f:
+                return json.load(f)
+        except:
+            return {"admin": "sakti123"}
+    return {"admin": "sakti123"}
+
+def save_users(users):
+    with open(USER_FILE, "w") as f:
+        json.dump(users, f)
+
 # Initialize Session State
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-# Generate a new random captcha question if it doesn't exist in session
+if "username" not in st.session_state:
+    st.session_state.username = ""
+
+# Dynamic Captcha Init
 if "captcha_num1" not in st.session_state:
     st.session_state.captcha_num1 = random.randint(1, 10)
     st.session_state.captcha_num2 = random.randint(1, 10)
     st.session_state.captcha_ans = st.session_state.captcha_num1 + st.session_state.captcha_num2
 
-# --- LOGIN & CAPTCHA SCREEN ---
+# --- AUTHENTICATION SCREEN (LOGIN / REGISTER) ---
 if not st.session_state.logged_in:
     st.markdown('<div class="main-title">🔐 IP-SAKTI Portal</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Next-Gen Secure Access & Verification</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-title">Secure Multi-User Access & Registration</div>', unsafe_allow_html=True)
     
     with st.container():
         st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         
-        with st.form("login_form"):
-            username = st.text_input("👤 Username", placeholder="Enter username (admin)")
-            password = st.text_input("🔑 Password", type="password", placeholder="Enter password")
-            
-            st.markdown("---")
-            st.markdown("🛡️ **Security Verification (Dynamic Captcha)**")
-            
-            # Display dynamic random question
-            q_text = f"Please solve: What is {st.session_state.captcha_num1} + {st.session_state.captcha_num2} ?"
-            st.text(q_text)
-            
-            captcha_input = st.text_input("Enter Answer", placeholder="Type answer...")
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            submit_login = st.form_submit_button("🔓 Secure Login")
-            
-            if submit_login:
-                if username == "admin" and password == "sakti123":
-                    if captcha_input.strip() == str(st.session_state.captcha_ans):
-                        st.session_state.logged_in = True
-                        # Clear captcha state after successful login
-                        del st.session_state.captcha_num1
-                        del st.session_state.captcha_num2
-                        del st.session_state.captcha_ans
-                        st.rerun()
+        # Tabs for Login and Sign Up
+        tab_login, tab_register = st.tabs(["🔓 Login", "📝 Create Account (Sign Up)"])
+        
+        # --- TAB 1: LOGIN ---
+        with tab_login:
+            with st.form("login_form"):
+                l_user = st.text_input("👤 Username", placeholder="Enter your username", key="l_user")
+                l_pass = st.text_input("🔑 Password", type="password", placeholder="Enter your password", key="l_pass")
+                
+                st.markdown("---")
+                st.markdown(f"🛡️ **Captcha:** What is {st.session_state.captcha_num1} + {st.session_state.captcha_num2} ?")
+                l_captcha = st.text_input("Enter Answer", placeholder="Type answer...", key="l_cap")
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                login_submit = st.form_submit_button("Login to Portal")
+                
+                if login_submit:
+                    users_db = load_users()
+                    if l_user in users_db and users_db[l_user] == l_pass:
+                        if l_captcha.strip() == str(st.session_state.captcha_ans):
+                            st.session_state.logged_in = True
+                            st.session_state.username = l_user
+                            st.rerun()
+                        else:
+                            st.error("❌ Incorrect Captcha answer! A new captcha has been generated.")
+                            st.session_state.captcha_num1 = random.randint(1, 10)
+                            st.session_state.captcha_num2 = random.randint(1, 10)
+                            st.session_state.captcha_ans = st.session_state.captcha_num1 + st.session_state.captcha_num2
                     else:
-                        st.error("❌ Incorrect Captcha answer! A new captcha has been generated.")
-                        # Reset captcha on failure for security
-                        st.session_state.captcha_num1 = random.randint(1, 10)
-                        st.session_state.captcha_num2 = random.randint(1, 10)
-                        st.session_state.captcha_ans = st.session_state.captcha_num1 + st.session_state.captcha_num2
-                else:
-                    st.error("❌ Invalid Username or Password! (Use admin / sakti123)")
+                        st.error("❌ Invalid Username or Password!")
+
+        # --- TAB 2: REGISTER ---
+        with tab_register:
+            with st.form("register_form"):
+                r_user = st.text_input("👤 Choose Username", placeholder="Create a unique username", key="r_user")
+                r_pass = st.text_input("🔑 Choose Password", type="password", placeholder="Create a password", key="r_pass")
+                r_pass_confirm = st.text_input("🔑 Confirm Password", type="password", placeholder="Re-enter password", key="r_pass_confirm")
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                register_submit = st.form_submit_button("Register Account")
+                
+                if register_submit:
+                    users_db = load_users()
+                    if not r_user or not r_pass:
+                        st.warning("⚠️ Please fill in all fields.")
+                    elif r_user in users_db:
+                        st.error("❌ Username already exists! Choose another one.")
+                    elif r_pass != r_pass_confirm:
+                        st.error("❌ Passwords do not match!")
+                    else:
+                        users_db[r_user] = r_pass
+                        save_users(users_db)
+                        st.success("✅ Account created successfully! Switch to the Login tab to sign in.")
                 
         st.markdown('</div>', unsafe_allow_html=True)
 
 # --- MAIN APP DASHBOARD ---
 else:
-    col1, col2 = st.columns([8, 2])
+    col1, col2 = st.columns([7, 3])
     with col1:
-        st.markdown('<div class="main-title">⚖️ IP-SAKTI Sahayak</div>', unsafe_allow_html=True)
-        st.markdown('<div class="sub-title">AI-Powered Traditional Formulation & Patent Compliance Analyzer</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="main-title">⚖️ IP-SAKTI Sahayak</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sub-title">Welcome back, <b>{st.session_state.username}</b>! (AI Patent Compliance Analyzer)</div>', unsafe_allow_html=True)
     with col2:
         if st.button("🚪 Logout"):
             st.session_state.logged_in = False
-            # Generate fresh captcha for next login
+            st.session_state.username = ""
             st.session_state.captcha_num1 = random.randint(1, 10)
             st.session_state.captcha_num2 = random.randint(1, 10)
             st.session_state.captcha_ans = st.session_state.captcha_num1 + st.session_state.captcha_num2
