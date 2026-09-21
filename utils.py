@@ -1,31 +1,30 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Streamlit secrets se API key secure tareeke se uthao
 API_KEY = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=API_KEY)
 
-def analyze_formulation(name, ingredients, process):
+def analyze_formulation(domain, name, description, process):
     try:
-        model = genai.GenerativeModel('gemini-3.6-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         prompt = f"""
-        Act as an expert Indian Patent Office examiner and Ayurvedic compliance officer specializing in Section 3(p) of the Indian Patents Act and TKDL (Traditional Knowledge Digital Library) standards.
+        Act as a senior Global Pharmaceutical Patent Examiner and Intellectual Property (IP) Compliance Expert specializing in Medical & Pharmacy Patent Laws (including Indian Patents Act Sec 3(d) for efficacy, Sec 3(p) for traditional systems, US FDA/USPTO guidelines, and international drug patentability).
         
-        Analyze the following traditional/herbal formulation:
-        - Formulation Name: {name}
-        - Key Ingredients: {ingredients}
-        - Manufacturing Process / Unique Benefit: {process}
+        Analyze the following medical/pharmaceutical innovation under the domain: {domain}
+        - Formulation / Drug Name: {name}
+        - Active Ingredients / Excipients / Chemical Composition: {description}
+        - Manufacturing Process / Dosage Form / Therapeutic Advantage: {process}
         
-        Your task is to determine whether this formulation is purely classical (non-patentable under Section 3(p) due to existing prior art) or if it has a unique 'Inventive Step' / novel modification that could qualify for a patent.
+        Your task is to determine whether this medical formulation is non-patentable (due to mere admixture under Sec 3(e), lack of enhanced efficacy under Sec 3(d), or prior art) or if it possesses a genuine 'Inventive Step' / Novelty / Therapeutic Efficacy.
         
-        Provide a structured, professional report with the following exact headings:
-        1. CLASSIFICATION STATUS: (Choose one: CLASSICAL / TRADITIONAL (Non-Patentable) OR NOVEL / MODIFIED (Potential Patent Scope))
-        2. CONFIDENCE SCORE: (Give a percentage, e.g., 85%)
-        3. SECTION 3(p) & TKDL COMPLIANCE INSIGHTS: (Detailed legal reasoning regarding prior art, traditional texts, and novelty)
-        4. STRATEGIC RECOMMENDATION FOR FOUNDER: (Actionable advice for filing or modifying the formulation)
+        Provide a structured, professional report with these exact headings:
+        1. CLASSIFICATION STATUS: (Choose one: CONVENTIONAL / MERE ADMIXTURE (Non-Patentable) OR NOVEL PHARMACEUTICAL / INVENTIVE FORMULATION (Potential Patent Scope))
+        2. CONFIDENCE SCORE: (Give a percentage, e.g., 88%)
+        3. LEGAL & PRIOR ART INSIGHTS: (Detailed legal reasoning based on pharmaceutical patent standards, bioavailability, side-effect reduction, or drug delivery technology)
+        4. STRATEGIC RECOMMENDATION FOR INVENTOR: (Actionable advice for drafting patent claims, clinical/lab data requirements, and overcoming statutory rejections)
         
-        Keep the tone formal, legal, and authoritative.
+        Keep the tone formal, medical-legal, sharp, and authoritative.
         """
         
         response = model.generate_content(prompt)
